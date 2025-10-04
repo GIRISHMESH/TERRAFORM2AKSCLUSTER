@@ -3,6 +3,7 @@ data "azurerm_kubernetes_service_versions" "current" {
   include_preview = false
 }
 
+###public cluster by default, not private
 resource "azurerm_kubernetes_cluster" "aks_cluster" {
   name                = "${azurerm_resource_group.aks_rg.name}-cluster"
   location            = azurerm_resource_group.aks_rg.location
@@ -93,4 +94,5 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     CostCenter   = "IT-Platform"
   }
 }
+
 
