@@ -29,6 +29,9 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     os_disk_size_gb      = 30
     type                 = "VirtualMachineScaleSets"
 
+# ✅ attach system pool to aks-system subnet
+  vnet_subnet_id = azurerm_subnet.aks_system.id
+
     # Worker node labels
     node_labels = {
       "nodepool-type" = "system"        # System pool runs k8s system components + workloads
@@ -102,4 +105,5 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     CostCenter   = "IT-Platform"
   }
 }
+
 
