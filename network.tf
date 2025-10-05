@@ -1,21 +1,15 @@
+# --- VNet ---
 resource "azurerm_virtual_network" "aks_vnet" {
   name                = "aks-vnet-${var.environment}"
   location            = azurerm_resource_group.aks_rg.location
   resource_group_name = azurerm_resource_group.aks_rg.name
   address_space       = ["10.0.0.0/16"]
 
-#Instead of a single subnet block inside the azurerm_virtual_network, split them into dedicated azurerm_subnet resources.
- # subnet {
- #   name           = "aks-subnet"
-#    address_prefix = "10.0.1.0/24"
-#  }
-
-tags = {
+  tags = {
     Environment = var.environment
     Type        = "AKS-Networking"
   }
 }
-
 
 # --- Subnets ---
 resource "azurerm_subnet" "aks_system" {
@@ -39,25 +33,11 @@ resource "azurerm_subnet" "aks_windows" {
   address_prefixes     = ["10.0.3.0/24"]
 }
 
-
-
-
-
+# --- NSG ---
 resource "azurerm_network_security_group" "aks_nsg" {
   name                = "aks-nsg-${var.environment}"
   location            = azurerm_resource_group.aks_rg.location
   resource_group_name = azurerm_resource_group.aks_rg.name
-
-resource "azurerm_subnet_network_security_group_association" "aks_linux_nsg" {
-  subnet_id                 = azurerm_subnet.aks_linux.id
-  network_security_group_id = azurerm_network_security_group.aks_nsg.id
-}
-
-resource "azurerm_subnet_network_security_group_association" "aks_windows_nsg" {
-  subnet_id                 = azurerm_subnet.aks_windows.id
-  network_security_group_id = azurerm_network_security_group.aks_nsg.id
-}
-
 
   security_rule {
     name                       = "Allow_HTTP"
@@ -83,7 +63,7 @@ resource "azurerm_subnet_network_security_group_association" "aks_windows_nsg" {
     destination_address_prefix = "*"
   }
 
-  # Optional: restrict Kubernetes API access to specified CIDR(s) if desired
+  # Optional: restrict Kubernetes API access to specified CIDR(s)
   security_rule {
     name                       = "Allow_K8s_API"
     priority                   = 110
@@ -92,7 +72,7 @@ resource "azurerm_subnet_network_security_group_association" "aks_windows_nsg" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "443"
-    source_address_prefix      = "*"            # change to specific CIDR for stricter security
+    source_address_prefix      = "*"   # tighten this in production
     destination_address_prefix = "VirtualNetwork"
   }
 
@@ -101,6 +81,7 @@ resource "azurerm_subnet_network_security_group_association" "aks_windows_nsg" {
     Purpose     = "AKS-Security"
   }
 }
+
 # --- NSG Associations ---
 resource "azurerm_subnet_network_security_group_association" "aks_system_nsg" {
   subnet_id                 = azurerm_subnet.aks_system.id
