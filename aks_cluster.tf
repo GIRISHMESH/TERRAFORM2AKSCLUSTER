@@ -1,5 +1,6 @@
 
-###Public cluster by default, not private main control plane  include virtual network also
+###Public cluster by default, not private 
+###The system node pool, virtual network, Linux and Windows node pools are in your subscription and are part of the worker node layer, not the control plane.
 
 
 data "azurerm_kubernetes_service_versions" "current" {
@@ -98,6 +99,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     CostCenter   = "IT-Platform"
   }
 }
+
 
 
 
