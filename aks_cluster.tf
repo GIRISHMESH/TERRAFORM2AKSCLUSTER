@@ -90,11 +90,16 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   # Networking → applied to worker nodes + services
   # API server communicates with this VNet but does not live inside it.
   network_profile {
-    network_plugin    = "azure"
-    load_balancer_sku = "Standard"
-    network_policy    = "calico"
-    service_cidr      = "10.0.0.0/16"
-    dns_service_ip    = "10.0.0.10"
+  network_plugin    = "azure"
+  load_balancer_sku = "Standard"
+  network_policy    = "calico"
+
+  # Must NOT overlap with VNet 10.0.0.0/16
+  service_cidr      = "10.240.0.0/16"
+  dns_service_ip    = "10.240.0.10"
+  docker_bridge_cidr = "172.17.0.1/16"
+}
+
   }
 
   tags = {
@@ -105,5 +110,6 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     CostCenter   = "IT-Platform"
   }
 }
+
 
 
