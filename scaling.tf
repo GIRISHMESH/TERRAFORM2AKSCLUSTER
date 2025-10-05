@@ -7,6 +7,10 @@ resource "azurerm_kubernetes_cluster_node_pool" "linux_user_pool" {
   mode                  = "User"
   os_type               = "Linux"
 
+
+vnet_subnet_id        = azurerm_subnet.aks_linux.id   # <--- added
+
+
   enable_auto_scaling   = true
   min_count             = 1
   max_count             = 5
@@ -42,6 +46,9 @@ resource "azurerm_kubernetes_cluster_node_pool" "windows_pool" {
   mode                  = "User"
   os_type               = "Windows"
 
+
+vnet_subnet_id        = azurerm_subnet.aks_windows.id   # <--- added
+
   enable_auto_scaling   = true
   min_count             = 1
   max_count             = 3
@@ -68,4 +75,5 @@ resource "azurerm_kubernetes_cluster_node_pool" "windows_pool" {
     Compliance   = "ISO27001"
   }
 }
+
 
