@@ -4,21 +4,60 @@ resource "azurerm_virtual_network" "aks_vnet" {
   resource_group_name = azurerm_resource_group.aks_rg.name
   address_space       = ["10.0.0.0/16"]
 
-  subnet {
-    name           = "aks-subnet"
-    address_prefix = "10.0.1.0/24"
-  }
+#Instead of a single subnet block inside the azurerm_virtual_network, split them into dedicated azurerm_subnet resources.
+ # subnet {
+ #   name           = "aks-subnet"
+#    address_prefix = "10.0.1.0/24"
+#  }
 
-  tags = {
+tags = {
     Environment = var.environment
     Type        = "AKS-Networking"
   }
 }
 
+
+# --- Subnets ---
+resource "azurerm_subnet" "aks_system" {
+  name                 = "aks-system-subnet"
+  resource_group_name  = azurerm_resource_group.aks_rg.name
+  virtual_network_name = azurerm_virtual_network.aks_vnet.name
+  address_prefixes     = ["10.0.1.0/24"]
+}
+
+resource "azurerm_subnet" "aks_linux" {
+  name                 = "aks-linux-subnet"
+  resource_group_name  = azurerm_resource_group.aks_rg.name
+  virtual_network_name = azurerm_virtual_network.aks_vnet.name
+  address_prefixes     = ["10.0.2.0/24"]
+}
+
+resource "azurerm_subnet" "aks_windows" {
+  name                 = "aks-windows-subnet"
+  resource_group_name  = azurerm_resource_group.aks_rg.name
+  virtual_network_name = azurerm_virtual_network.aks_vnet.name
+  address_prefixes     = ["10.0.3.0/24"]
+}
+
+
+
+
+
 resource "azurerm_network_security_group" "aks_nsg" {
   name                = "aks-nsg-${var.environment}"
   location            = azurerm_resource_group.aks_rg.location
   resource_group_name = azurerm_resource_group.aks_rg.name
+
+resource "azurerm_subnet_network_security_group_association" "aks_linux_nsg" {
+  subnet_id                 = azurerm_subnet.aks_linux.id
+  network_security_group_id = azurerm_network_security_group.aks_nsg.id
+}
+
+resource "azurerm_subnet_network_security_group_association" "aks_windows_nsg" {
+  subnet_id                 = azurerm_subnet.aks_windows.id
+  network_security_group_id = azurerm_network_security_group.aks_nsg.id
+}
+
 
   security_rule {
     name                       = "Allow_HTTP"
@@ -62,8 +101,18 @@ resource "azurerm_network_security_group" "aks_nsg" {
     Purpose     = "AKS-Security"
   }
 }
-# Example: associate NSG to the AKS subnet (recommended)
-resource "azurerm_subnet_network_security_group_association" "aks_subnet_nsg" {
-  subnet_id                 = azurerm_virtual_network.aks_vnet.subnet[0].id
+# --- NSG Associations ---
+resource "azurerm_subnet_network_security_group_association" "aks_system_nsg" {
+  subnet_id                 = azurerm_subnet.aks_system.id
+  network_security_group_id = azurerm_network_security_group.aks_nsg.id
+}
+
+resource "azurerm_subnet_network_security_group_association" "aks_linux_nsg" {
+  subnet_id                 = azurerm_subnet.aks_linux.id
+  network_security_group_id = azurerm_network_security_group.aks_nsg.id
+}
+
+resource "azurerm_subnet_network_security_group_association" "aks_windows_nsg" {
+  subnet_id                 = azurerm_subnet.aks_windows.id
   network_security_group_id = azurerm_network_security_group.aks_nsg.id
 }
