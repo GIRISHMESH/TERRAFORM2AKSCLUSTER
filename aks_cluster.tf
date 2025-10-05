@@ -11,7 +11,7 @@ data "azurerm_kubernetes_service_versions" "current" {
 resource "azurerm_kubernetes_cluster" "aks_cluster" {
   name                = "${azurerm_resource_group.aks_rg.name}-cluster"
   location            = azurerm_resource_group.aks_rg.location
-  resource_group_name = azurerm_resource_group.aks_rg.name  #### main resource group--> holds for the AKS cluster object or  metadata
+  resource_group_name = azurerm_resource_group.aks_rg.name  #### main resource group--> holds for the AKS cluster object or  metadata — think of it as a pointer to your cluster
   dns_prefix          = "${azurerm_resource_group.aks_rg.name}-cluster"
   kubernetes_version  = data.azurerm_kubernetes_service_versions.current.latest_version
 
@@ -102,3 +102,4 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     CostCenter   = "IT-Platform"
   }
 }
+
